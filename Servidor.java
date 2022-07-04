@@ -63,13 +63,23 @@ public class Servidor extends Thread {
     }
   }
 
-  /***
-   * Método usado para enviar mensagem para todos os clients
-   * 
-   * @param bwSaida do tipo BufferedWriter
-   * @param msg     do tipo String
-   * @throws IOException
-   */
+  public static void readBashScript() {
+    try {
+        Process proc = Runtime.getRuntime().exec("/home/hans/Desktop/deskop/Facul/getURL.sh"); //Whatever you want to execute
+        BufferedReader read = new BufferedReader(new InputStreamReader(
+                proc.getInputStream()));
+        try {
+            proc.waitFor();
+        } catch (InterruptedException e) {
+            System.out.println(e.getMessage());
+        }
+        if (read.ready()) {
+            System.out.println(read.readLine());
+        }
+    } catch (IOException e) {
+        System.out.println(e.getMessage());
+    }
+  }
   public void sendToAll(BufferedWriter bwSaida, String msg) throws IOException {
     BufferedWriter bwS;
 
@@ -87,7 +97,7 @@ public class Servidor extends Thread {
 
     try {
       // Cria os objetos necessário para instânciar o servidor
-      //readBashScript();
+      readBashScript();
       JLabel lblMessage = new JLabel("Porta do Servidor:");
       JTextField txtPorta = new JTextField("12345");
       Object[] texts = { lblMessage, txtPorta };
