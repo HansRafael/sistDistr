@@ -37,7 +37,6 @@ public class Servidor extends Thread {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    System.out.println(clientsFromServer);
   }
 
   /**
@@ -63,13 +62,24 @@ public class Servidor extends Thread {
     }
   }
 
-  /***
-   * Método usado para enviar mensagem para todos os clients
-   * 
-   * @param bwSaida do tipo BufferedWriter
-   * @param msg     do tipo String
-   * @throws IOException
-   */
+  
+  public static void readBashScript() {
+    try {
+        Process proc = Runtime.getRuntime().exec("/home/hans/Desktop/deskop/Facul/getURL.sh"); //Whatever you want to execute
+        BufferedReader read = new BufferedReader(new InputStreamReader(
+                proc.getInputStream()));
+        try {
+            proc.waitFor();
+        } catch (InterruptedException e) {
+            System.out.println(e.getMessage());
+        }
+        if (read.ready()) {
+            System.out.println(read.readLine());
+        }
+    } catch (IOException e) {
+        System.out.println(e.getMessage());
+    }
+  }
   public void sendToAll(BufferedWriter bwSaida, String msg) throws IOException {
     BufferedWriter bwS;
 
@@ -105,7 +115,6 @@ public class Servidor extends Thread {
       while (true) {
         System.out.println("Aguardando conexão...");
         Socket clientSocket = serverSocket.accept();
-        System.out.print(clientSocket);
         System.out.println("Cliente conectado...");
         Thread t = new Servidor(clientSocket);
         t.start();
