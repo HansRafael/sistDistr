@@ -37,7 +37,6 @@ public class Servidor extends Thread {
     } catch (IOException e) {
       e.printStackTrace();
     }
-    System.out.println(clientsFromServer);
   }
 
   /**
@@ -63,6 +62,7 @@ public class Servidor extends Thread {
     }
   }
 
+  
   public static void readBashScript() {
     try {
         Process proc = Runtime.getRuntime().exec("/home/hans/Desktop/deskop/Facul/getURL.sh"); //Whatever you want to execute
@@ -97,7 +97,7 @@ public class Servidor extends Thread {
 
     try {
       // Cria os objetos necessário para instânciar o servidor
-      readBashScript();
+      //readBashScript();
       JLabel lblMessage = new JLabel("Porta do Servidor:");
       JTextField txtPorta = new JTextField("12345");
       Object[] texts = { lblMessage, txtPorta };
@@ -115,7 +115,6 @@ public class Servidor extends Thread {
       while (true) {
         System.out.println("Aguardando conexão...");
         Socket clientSocket = serverSocket.accept();
-        System.out.print(clientSocket);
         System.out.println("Cliente conectado...");
         Thread t = new Servidor(clientSocket);
         t.start();
