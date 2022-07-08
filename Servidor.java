@@ -1,4 +1,5 @@
-package exampleOne;
+package chat;
+
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
@@ -43,14 +44,14 @@ public class Servidor extends Thread {
   /**
    * Método run
    */
-  public void run() {
+  public void run() {                                            // método run é onde as threads ficam executando até serem interrompidas ou terminadas pelo cliente ou pelo servidor
     try {
-      String msg;
-      OutputStream ou = this.clientSocket.getOutputStream();
-      Writer ouw = new OutputStreamWriter(ou);
-      BufferedWriter bfw = new BufferedWriter(ouw);
-      clientsFromServer.add(bfw);
-      nameUser = msg = bfr.readLine();
+      String msg;                                              // variável para receber a mensagem do servidor
+      OutputStream ou = this.clientSocket.getOutputStream();  // recebe o output stream do socket
+      Writer ouw = new OutputStreamWriter(ou);               // converte o output stream para output stream writer
+      BufferedWriter bfw = new BufferedWriter(ouw);         // cria um buffer writer para escrever o output stream writer
+      clientsFromServer.add(bfw);                          // adiciona o buffer writer ao array de buffer writers
+      nameUser = msg = bfr.readLine();                    // lê a mensagem do servidor
 
       while (!"Sair".equalsIgnoreCase(msg) && msg != null) {
         msg = bfr.readLine();

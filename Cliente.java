@@ -1,4 +1,4 @@
-package exampleOne;
+package chat;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -32,13 +32,21 @@ public class Cliente extends JFrame implements ActionListener, KeyListener {
   private JTextField txtIP;
   private JTextField txtPorta;
   private JTextField txtNome;
+  private JTextField txtR;
+  private JTextField txtG;
+  private JTextField txtB;
+
 
   public Cliente() throws IOException {
     JLabel lblMessage = new JLabel("Verificar!");
     txtIP = new JTextField("127.0.0.1");
     txtPorta = new JTextField("12345");
     txtNome = new JTextField("Cliente");
-    Object[] texts = { lblMessage, txtIP, txtPorta, txtNome };
+    txtR = new JTextField("0-255");
+    txtG = new JTextField("0-255");
+    txtB = new JTextField("0-255");
+  
+    Object[] texts = { lblMessage, txtIP, txtPorta, txtNome, txtR, txtG, txtB };
     JOptionPane.showMessageDialog(null, texts);
     pnlContent = new JPanel();
     texto = new JTextArea(10, 20);
@@ -63,7 +71,11 @@ public class Cliente extends JFrame implements ActionListener, KeyListener {
     pnlContent.add(txtMsg);
     pnlContent.add(btnSair);
     pnlContent.add(btnSend);
-    pnlContent.setBackground(Color.LIGHT_GRAY);
+    try {
+      pnlContent.setBackground(new Color(Integer.parseInt(txtR.getText()), Integer.parseInt(txtG.getText()), Integer.parseInt(txtB.getText())));
+    } catch (Exception e) {
+      pnlContent.setBackground(Color.LIGHT_GRAY);
+    }
     texto.setBorder(BorderFactory.createEtchedBorder(Color.BLUE, Color.BLUE));
     txtMsg.setBorder(BorderFactory.createEtchedBorder(Color.BLUE, Color.BLUE));
     setTitle(txtNome.getText());
@@ -118,19 +130,19 @@ public class Cliente extends JFrame implements ActionListener, KeyListener {
    */
   public void escutar() throws IOException {
 
-    InputStream in = socket.getInputStream();
-    InputStreamReader inr = new InputStreamReader(in);
-    BufferedReader bfr = new BufferedReader(inr);
-    String msg = "";
+    InputStream in = socket.getInputStream();                  // recebe o input stream do socket
+    InputStreamReader inr = new InputStreamReader(in);        // converte o input stream para input stream reader
+    BufferedReader bfr = new BufferedReader(inr);            // cria um buffer reader para ler o input stream reader
+    String msg = "";                                        // variável para receber a mensagem do servidor
 
-    while (!"Sair".equalsIgnoreCase(msg))
+    while (!"Sair".equalsIgnoreCase(msg))                  // enquanto não receber o comando de sair do servidor
 
-      if (bfr.ready()) {
-        msg = bfr.readLine();
-        if (msg.equals("Sair")) {
-          texto.append("Servidor caiu! \r\n");
-        } else
-          texto.append(msg + "\r\n");
+      if (bfr.ready()) {                                  // se o buffer reader estiver pronto para ler, ou seja, se houver algo para ler
+        msg = bfr.readLine();                            // lê a mensagem do servidor
+        if (msg.equals("Sair")) {              // se a mensagem recebida for o comando de sair
+          texto.append("Servidor caiu! \r\n");     // exibe a mensagem na tela
+        } else                                         // se não for o comando de sair
+          texto.append(msg + "\r\n");                 // imprime a mensagem recebida do servidor
       }
   }
 
@@ -141,36 +153,36 @@ public class Cliente extends JFrame implements ActionListener, KeyListener {
    */
   public void sair() throws IOException {
 
-    enviarMensagem("Sair");
-    bfw.close();
-    ouw.close();
-    ou.close();
-    socket.close();
+    enviarMensagem("Sair");                // envia o comando de sair para o servidor
+    bfw.close();                               // fecha o buffer writer
+    ouw.close();                              // fecha o output stream writer
+    ou.close();                              // fecha o output stream
+    socket.close();                         // fecha o socket
   }
 
   @Override
   public void actionPerformed(ActionEvent e) {
 
     try {
-      if (e.getActionCommand().equals(btnSend.getActionCommand()))
-        enviarMensagem(txtMsg.getText());
-      else if (e.getActionCommand().equals(btnSair.getActionCommand()))
-        sair();
-    } catch (IOException e1) {
-      // TODO Auto-generated catch block
-      e1.printStackTrace();
+      if (e.getActionCommand().equals(btnSend.getActionCommand()))         // se o botão clicado for o botão de enviar mensagem
+        enviarMensagem(txtMsg.getText());                                 // envia a mensagem para o servidor
+      else if (e.getActionCommand().equals(btnSair.getActionCommand()))  // se o botão clicado for o botão de sair
+        sair();                                                         // envia o comando de sair para o servidor
+    } catch (IOException e1) {                                         // caso dê algum erro
+
+      e1.printStackTrace();                                          // imprime o erro na tela
     }
   }
 
   @Override
   public void keyPressed(KeyEvent e) {
 
-    if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+    if (e.getKeyCode() == KeyEvent.VK_ENTER) {                          // se o usuário pressionar a tecla enter
       try {
-        enviarMensagem(txtMsg.getText());
-      } catch (IOException e1) {
-        // TODO Auto-generated catch block
-        e1.printStackTrace();
+        enviarMensagem(txtMsg.getText());                              // envia a mensagem para o servidor
+      } catch (IOException e1) {                                      // caso dê algum erro
+        
+        e1.printStackTrace();                                        // imprime o erro na tela
       }
     }
   }
