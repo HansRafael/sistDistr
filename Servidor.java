@@ -116,7 +116,7 @@ public class Servidor extends Thread {
       bufferOutput = (BufferedWriter) bw;                            // dentro da lista clientsFromServer         
       if (!(bwOutput == bufferOutput)) {     
         if(message != null){                                        // e irá escrever dentro do buffer(no caso, a tela)
-          bw.write(nameUser + " diz -> " + message + "\r\n");           // de todos menos de qm enviou
+          bw.write(nameUser + " -> " + message + "\r\n");           // de todos menos de qm enviou
           bw.flush();
         }                       
       }
