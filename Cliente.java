@@ -38,7 +38,7 @@ public class Cliente extends JFrame implements ActionListener, KeyListener {
 
   public Cliente() throws IOException {
     JLabel lblMessage = new JLabel("Verificar!");
-    txtIP = new JTextField("127.0.0.1");
+    txtIP = new JTextField("0.tcp.sa.ngrok.io");
     txtPorta = new JTextField("12345");
     txtNome = new JTextField("Cliente");
     txtR = new JTextField("0-255");
