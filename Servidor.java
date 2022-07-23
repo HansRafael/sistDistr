@@ -1,12 +1,14 @@
 package chat;
 
+/* Variaveis necessárias para a leitura dos dados de entrada */
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
-
+import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -25,16 +27,16 @@ public class Servidor extends Thread {
 
   private String nameUser;
   private Socket clientSocket;
-  private InputStream in;
-  private InputStreamReader inr;
-  private BufferedReader bfr;
+  private InputStream inputSocket;
+  private InputStreamReader inputSocketReader;
+  private BufferedReader bufferRead;
 
   public Servidor(Socket clientSocket) {
     this.clientSocket = clientSocket;
     try {
-      in = clientSocket.getInputStream();
-      inr = new InputStreamReader(in);
-      bfr = new BufferedReader(inr);
+      inputSocket = clientSocket.getInputStream();                 //Pega o input do socket do cliente
+      inputSocketReader = new InputStreamReader(inputSocket);      //Realiza o buffer da string que vem do fluxo do input, 
+      bufferRead = new BufferedReader(inputSocketReader);          //Tornando a leitura dos caracteres/linhas mais eficiente
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -45,17 +47,17 @@ public class Servidor extends Thread {
    */
   public void run() {                                            // método run é onde as threads ficam executando até serem interrompidas ou terminadas pelo cliente ou pelo servidor
     try {
-      String msg;                                              // variável para receber a mensagem do servidor
-      OutputStream ou = this.clientSocket.getOutputStream();  // recebe o output stream do socket
-      Writer ouw = new OutputStreamWriter(ou);               // converte o output stream para output stream writer
-      BufferedWriter bfw = new BufferedWriter(ouw);         // cria um buffer writer para escrever o output stream writer
+      String message;                                              // variável para receber a mensagem do servidor
+      OutputStream outStream = this.clientSocket.getOutputStream();  // recebe o output stream do socket
+      Writer outWriter = new OutputStreamWriter(outStream);               // converte o output stream para output stream writer
+      BufferedWriter bfw = new BufferedWriter(outWriter);         // cria um buffer writer para escrever o output stream writer
       clientsFromServer.add(bfw);                          // adiciona o buffer writer ao array de buffer writers
-      nameUser = msg = bfr.readLine();                    // lê a mensagem do servidor
+      nameUser = message = bufferRead.readLine();                    // lê a mensagem do servidor
 
-      while (!"Sair".equalsIgnoreCase(msg) && msg != null) {
-        msg = bfr.readLine();
-        sendToAll(bfw, msg);
-        System.out.println(msg);
+      while (!"Sair".equalsIgnoreCase(message) && message != null) {    //enquanto ninguem escrever "sair", as linhas do
+        message = bufferRead.readLine();                               // do input continuarão sendo lidas e enviadas
+        sendToAll(bfw, message);
+        System.out.println(message);
       }
 
     } catch (Exception e) {
@@ -63,45 +65,88 @@ public class Servidor extends Thread {
     }
   }
 
-  
-  public static void readBashScript() {
+  //Script para subir o servidor NGROK que irá servir como um tunel paral a tcp://localhost:$PORT
+  public static String upServ(){
+    String path = Paths.get("").toAbsolutePath().toString(); //pega o diretorio atual
+    System.out.println("Working Directory = " + path);
+    String values = "";
     try {
-        Process proc = Runtime.getRuntime().exec("/home/hans/Desktop/deskop/Facul/getURL.sh"); //Whatever you want to execute
-        BufferedReader read = new BufferedReader(new InputStreamReader(
-                proc.getInputStream()));
-        try {
-            proc.waitFor();
-        } catch (InterruptedException e) {
-            System.out.println(e.getMessage());
-        }
-        if (read.ready()) {
-            System.out.println(read.readLine());
-        }
-    } catch (IOException e) {
+      Process proc = Runtime.getRuntime().exec(path+"/upServ.sh"); //cria um processo
+      BufferedReader read = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+      try {
+        proc.waitFor();
+      } catch (InterruptedException e) {
         System.out.println(e.getMessage());
-    }
+      }
+        if (read.ready()) {
+          values = read.readLine();
+        }
+      } catch (IOException e) {
+        System.out.println(e.getMessage());
+      }
+      return values;
   }
-  public void sendToAll(BufferedWriter bwSaida, String msg) throws IOException {
-    BufferedWriter bwS;
+  
+  //Script para pegar as informacoes do servidor TCP criado pelo NGROK
+  public static String readBashScript() {
+    String path = Paths.get("").toAbsolutePath().toString();
+    System.out.println("Working Directory = " + path);
+    String values = "";
+    try {
+      Process proc = Runtime.getRuntime().exec(path+"/getURL.sh"); 
+      BufferedReader read = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+      try {
+        proc.waitFor();
+      } catch (InterruptedException e) {
+        System.out.println(e.getMessage());
+      }
+        if (read.ready()) {
+          values = read.readLine();
+        }
+      } catch (IOException e) {
+        System.out.println(e.getMessage());
+      }
+      return values;
+  }
 
-    for (BufferedWriter bw : clientsFromServer) {
-      bwS = (BufferedWriter) bw;
-      if (!(bwSaida == bwS)) {
-        bw.write(nameUser + " -> " + msg + "\r\n");
-        bw.flush();
+  public void sendToAll(BufferedWriter bwOutput, String message) throws IOException {
+    BufferedWriter bufferOutput;
+
+    for (BufferedWriter bw : clientsFromServer) {                     //irá pegar todos os sockets que estao
+      bufferOutput = (BufferedWriter) bw;                            // dentro da lista clientsFromServer         
+      if (!(bwOutput == bufferOutput)) {     
+        if(message != null){                                        // e irá escrever dentro do buffer(no caso, a tela)
+          bw.write(nameUser + " -> " + message + "\r\n");           // de todos menos de qm enviou
+          bw.flush();
+        }                       
       }
     }
   }
 
 
   public static void main(String[] args) {
-
+    String tcp;
+    String portLocal;
     try {
-      // Cria os objetos necessário para instânciar o servidor
-      //readBashScript();
-      JLabel lblMessage = new JLabel("Porta do Servidor:");
-      JTextField txtPorta = new JTextField("12345");
-      Object[] texts = { lblMessage, txtPorta };
+      // Cria os objetos e variaveis necessárias para instânciar o servidor
+      portLocal = upServ();
+      System.out.println("Porta Local: " + portLocal);
+      tcp = readBashScript();
+      System.out.println("TCP FROM NGROK: " + tcp);
+      //faz o tratamento da string TCP que veio do script, splitando nos lugares
+      String[] words = tcp.split("//");
+      String[] newW = words[1].split(":");
+      String url, port;
+      url = newW[0];
+      port = newW[1];
+      System.out.println("url: "+url);
+      System.out.println("port: "+port);
+      JLabel lblMessage = new JLabel("URL do Servidor: "+url);
+      JLabel lblMessageTwo = new JLabel("Porta do Servidor: "+port);
+      Object[] text = {lblMessage, lblMessageTwo};
+      JOptionPane.showMessageDialog(null, text);
+
+      Object[] texts = { lblMessage};
       JOptionPane.showMessageDialog(null, texts);
       /* 
        * Aqui, estamos chamando o servidor e atribuindo a ela uma porta
@@ -109,9 +154,9 @@ public class Servidor extends Thread {
        * ouvindo o socket para um cliente realizar a conexao no método
        * accept()
        */
-      serverSocket = new ServerSocket(Integer.parseInt(txtPorta.getText()));
+      serverSocket = new ServerSocket(Integer.parseInt(portLocal));
       clientsFromServer = new ArrayList<BufferedWriter>();
-      JOptionPane.showMessageDialog(null, "Servidor ativo na porta: " + txtPorta.getText());
+      JOptionPane.showMessageDialog(null, "Servidor ativo na porta: " + port);
 
       while (true) {
         System.out.println("Aguardando conexão...");
