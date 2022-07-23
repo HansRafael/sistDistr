@@ -116,7 +116,7 @@ public class Cliente extends JFrame implements ActionListener, KeyListener {
       texto.append("Desconectado \r\n");
     } else {
       bfw.write(msg + "\r\n");
-      texto.append(txtNome.getText() + " diz -> " + txtMsg.getText() + "\r\n");
+      texto.append("Você -> " + txtMsg.getText() + "\r\n");
     }
     bfw.flush();
     txtMsg.setText("");
@@ -188,12 +188,10 @@ public class Cliente extends JFrame implements ActionListener, KeyListener {
 
   @Override
   public void keyReleased(KeyEvent arg0) {
-    // TODO Auto-generated method stub
   }
 
   @Override
   public void keyTyped(KeyEvent arg0) {
-    // TODO Auto-generated method stub
   }
 
   public static void main(String[] args) throws IOException {
